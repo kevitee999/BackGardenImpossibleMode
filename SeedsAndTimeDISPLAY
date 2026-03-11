@@ -1,0 +1,83 @@
+-- SEED COUNTER GUI - MOVED HERE SO IT LOADS BEFORE THE LOOP
+local stats = LocalPlayer:WaitForChild("leaderstats", 30)
+local seeds = stats and stats:WaitForChild("Seeds", 10)
+if seeds then
+    if game:GetService("CoreGui"):FindFirstChild("SeedCounterGUI") then
+        game:GetService("CoreGui"):FindFirstChild("SeedCounterGUI"):Destroy()
+    end
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "SeedCounterGUI"
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui")  -- or change to LocalPlayer.PlayerGui if needed
+ 
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 250, 0, 160)
+    frame.Position = UDim2.new(0.35, 0, 0.05, 0)
+    frame.BackgroundTransparency = 1
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = gui
+ 
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 200, 0, 50)
+    label.Position = UDim2.new(0.5, -100, 0, 0)
+    label.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    label.TextColor3 = Color3.fromRGB(0, 255, 0)
+    label.TextScaled = true
+    label.Font = Enum.Font.SourceSansBold
+    label.Text = "Seeds: " .. tostring(seeds.Value)
+    label.Parent = frame
+ 
+    local timerLabel = Instance.new("TextLabel")
+    timerLabel.Size = UDim2.new(0, 200, 0, 40)
+    timerLabel.Position = UDim2.new(0.5, -100, 0, 55)
+    timerLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    timerLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    timerLabel.TextScaled = true
+    timerLabel.Font = Enum.Font.SourceSansBold
+    timerLabel.Text = "Time: 00:00:00"
+    timerLabel.Parent = frame
+ 
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 120, 0, 40)
+    button.Position = UDim2.new(0.5, -60, 1, -45)
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextScaled = true
+    button.Font = Enum.Font.SourceSansBold
+    button.Text = "Hide"
+    button.Parent = frame
+ 
+    local visible = true
+    button.MouseButton1Click:Connect(function()
+        visible = not visible
+        label.Visible = visible
+        timerLabel.Visible = visible
+        button.Text = visible and "Hide" or "Show"
+    end)
+ 
+    seeds:GetPropertyChangedSignal("Value"):Connect(function()
+        label.Text = "Seeds: " .. tostring(seeds.Value)
+    end)
+ 
+    local startTime = tick()
+    task.spawn(function()
+        while gui.Parent do
+            local elapsed = math.floor(tick() - startTime)
+            local h = math.floor(elapsed / 3600)
+            local m = math.floor((elapsed % 3600) / 60)
+            local s = elapsed % 60
+            timerLabel.Text = string.format("Time: %02d:%02d:%02d", h, m, s)
+            task.wait(1)
+        end
+    end)
+ 
+    LocalPlayer.CharacterAdded:Connect(function()
+        startTime = tick()
+        timerLabel.Text = "Time: 00:00:00"
+    end)
+ 
+    print("[GUI] Seed Counter Loaded")
+else
+    warn("[GUI] Could not find Seeds leaderstat - check if in game")
+end
